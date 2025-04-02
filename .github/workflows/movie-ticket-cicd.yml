@@ -1,0 +1,72 @@
+name: Movie Ticket System CI/CD
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    # Thiết lập Java cho backend SpringBoot
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    # Build và chạy tests Spring Boot
+    - name: Build and test Spring Boot application
+      working-directory: ./DemoCICDDev
+      run: |
+        mvn clean package
+        
+    # Chạy ứng dụng Spring Boot trong background
+    - name: Run Spring Boot application
+      working-directory: ./DemoCICDDev
+      run: |
+        java -jar target/*.jar &
+        sleep 30s  # Đợi cho ứng dụng khởi động
+        
+    # Kiểm tra ứng dụng web có chạy không
+    - name: Check if application is running
+      run: |
+        curl -f http://localhost:8080 || exit 1
+        
+    # Tải và chạy Katalon tests
+    - name: Download Katalon Studio
+      run: |
+        wget -q https://download.katalon.com/10.1.1/Katalon_Studio_Engine_Linux_64-10.1.1.tar.gz
+        sudo mkdir -p /opt/katalon
+        sudo tar -xzf Katalon_Studio_Engine_Linux_64-10.1.1.tar.gz -C /opt/katalon
+        sudo chmod +x /opt/katalon/Katalon_Studio_Engine_Linux_64-10.1.1/katalonc
+        
+    - name: Run Katalon Tests
+      env:
+        KATALON_API_KEY: ${{ secrets.KATALON_API_KEY }}
+      run: |
+        # Di chuyển đến thư mục chứa Katalon Studio
+        cd /opt/katalon/Katalon_Studio_Engine_Linux_64-10.1.1/
+        # Kiểm tra thư mục dự án Katalon
+        ls -la "${GITHUB_WORKSPACE}/Search Test"
+        # Chạy Katalon với đường dẫn tuyệt đối
+        ./katalonc -noSplash -runMode=console \
+        -projectPath="${GITHUB_WORKSPACE}/Search Test/Search Test.prj" \
+        -retry=0 \
+        -testSuitePath="Test Suites/Search Test Suite" \
+        -executionProfile="default" \
+        -browserType="Chrome (headless)" \
+        -apiKey=${{ secrets.KATALON_API_KEY }} \
+        --config -webui.autoUpdateDrivers=true -webui.chrome.arg.no-sandbox=true
+        
+    - name: 📤 Upload báo cáo kiểm thử
+      uses: actions/upload-artifact@v4
+      with:
+        name: katalon-test-report
+        path: "Search Test/Reports"
