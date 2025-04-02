@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<TestCaseEntity>
+   <description></description>
+   <name>Search Test Case</name>
+   <tag></tag>
+   <comment></comment>
+   <recordOption>OTHER</recordOption>
+   <testCaseGuid>935f2ca4-ce85-43c7-9bb7-96810036b771</testCaseGuid>
+   <variableLinks>
+      <testDataLinkId></testDataLinkId>
+      <type>DEFAULT</type>
+      <value></value>
+      <variableId>6058fcbb-c067-4202-92a9-a63df8b96df6</variableId>
+   </variableLinks>
+   <variable>
+      <defaultValue>''</defaultValue>
+      <description></description>
+      <id>6058fcbb-c067-4202-92a9-a63df8b96df6</id>
+      <masked>false</masked>
+      <name>query</name>
+   </variable>
+</TestCaseEntity>
